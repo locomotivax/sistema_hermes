@@ -17,7 +17,8 @@
     "simulate": "node scripts/model-cli.mjs simulate",
     "data:download": ".venv/bin/python pipeline/study.py download",
     "data:build": ".venv/bin/python pipeline/study.py build",
-    "test:pipeline": ".venv/bin/python -m pytest tests/test_pipeline.py -q"
+    "test:pipeline": ".venv/bin/python -m pytest tests/test_pipeline.py -q",
+    "build:pages": "NEXT_PUBLIC_BASE_PATH=/sistema_hermes next build --webpack"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

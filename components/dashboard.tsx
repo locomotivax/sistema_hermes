@@ -200,7 +200,7 @@ export default function Dashboard() {
   }, [scenario]);
   useEffect(() => {
     const abort = new AbortController();
-    fetch("/data/study.json", { signal: abort.signal })
+    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/study.json`, { signal: abort.signal })
       .then((r) => {
         if (!r.ok)
           throw new Error("Não foi possível carregar a execução publicada.");

@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description:
     "Pesquisa reproduzível de demanda multimodal e cenários residenciais até 2036.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/favicon.svg`,
+    shortcut: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/favicon.svg`,
   },
 };
 
