@@ -63,6 +63,8 @@ import {
   validateScenario,
 } from "@/lib/model/engine";
 import StudyMap from "./study-map";
+const SHOW_PROJECTS = false;
+
 const labels: Record<Mode, string> = {
   car: "Automóvel",
   moto: "Moto",
@@ -496,10 +498,12 @@ export default function Dashboard() {
             <TabsTrigger value="overview">
               <Activity size={16} /> Agora e depois
             </TabsTrigger>
-            <TabsTrigger value="projects">
-              <Layers size={16} /> Empreendimentos{" "}
-              <span className="count">{bundle.projects.length}</span>
-            </TabsTrigger>
+            {SHOW_PROJECTS && (
+              <TabsTrigger value="projects">
+                <Layers size={16} /> Empreendimentos{" "}
+                <span className="count">{bundle.projects.length}</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="interventions">
               <SlidersHorizontal size={16} /> Intervenções
             </TabsTrigger>
@@ -789,10 +793,14 @@ export default function Dashboard() {
                 </div>
                 <StudyMap
                   bundle={bundle}
-                  onProject={(id) => {
-                    setHighlight(id);
-                    setTab("projects");
-                  }}
+                  onProject={
+                    SHOW_PROJECTS
+                      ? (id) => {
+                          setHighlight(id);
+                          setTab("projects");
+                        }
+                      : undefined
+                  }
                 />
               </div>
               <div className="quality-strip">
@@ -981,159 +989,165 @@ export default function Dashboard() {
             </section>
           </div>
         </TabsContent>
-        <TabsContent value="projects">
-          <section className="wide-card">
-            <div className="section-heading">
-              <div>
-                <span className="eyebrow">CADASTRO DOCUMENTAL</span>
-                <h2>Empreendimentos no território</h2>
+        {SHOW_PROJECTS && (
+          <TabsContent value="projects">
+            <section className="wide-card">
+              <div className="section-heading">
+                <div>
+                  <span className="eyebrow">CADASTRO DOCUMENTAL</span>
+                  <h2>Empreendimentos no território</h2>
+                  <p>
+                    Alvarás não comprovam conclusão. Datas editadas são
+                    hipóteses do cenário.
+                  </p>
+                </div>
+                <span className="badge amber">
+                  {visible?.pendingProjects ?? bundle.projects.length}{" "}
+                  cronogramas pendentes
+                </span>
+              </div>
+              <div className="quality-strip">
+                <Info size={17} />
                 <p>
-                  Alvarás não comprovam conclusão. Datas editadas são hipóteses
-                  do cenário.
+                  Entrega anterior à referência exige ocupação em 2026. Até
+                  preencher, o projeto não acrescenta moradores.
                 </p>
               </div>
-              <span className="badge amber">
-                {visible?.pendingProjects ?? bundle.projects.length} cronogramas
-                pendentes
-              </span>
-            </div>
-            <div className="quality-strip">
-              <Info size={17} />
-              <p>
-                Entrega anterior à referência exige ocupação em 2026. Até
-                preencher, o projeto não acrescenta moradores.
-              </p>
-            </div>
-            <div className="project-table">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {[
-                      "Incluir",
-                      "Endereço / evidência",
-                      "Unidades",
-                      "Entrega hipotética",
-                      "Ocupado em 2026 (%)",
-                      "Ocupação final (%)",
-                    ].map((t) => (
-                      <TableHead key={t}>{t}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bundle.projects.map((p) => {
-                    const o = scenario.projectOverrides[p.id] ?? {};
-                    return (
-                      <TableRow
-                        key={p.id}
-                        className={highlight === p.id ? "highlight-row" : ""}
-                      >
-                        <TableCell>
-                          <Checkbox
-                            aria-label={`Incluir ${p.address}`}
-                            checked={scenario.selectedProjectIds.includes(p.id)}
-                            onCheckedChange={(v) =>
-                              update({
-                                selectedProjectIds: v
-                                  ? [
-                                      ...new Set([
-                                        ...scenario.selectedProjectIds,
-                                        p.id,
-                                      ]),
-                                    ]
-                                  : scenario.selectedProjectIds.filter(
-                                      (id) => id !== p.id,
-                                    ),
-                              })
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <strong>{p.address}</strong>
-                          <span className="project-meta">
-                            Alvará: {p.licenseDate ?? "sem data"}
-                          </span>
-                          <details>
-                            <summary>Documentação</summary>
-                            <p>
-                              {p.status}
-                              <br />
-                              Processo {p.process || "ausente"}
-                              <br />
-                              SQL {p.parcel || "ausente"}
-                            </p>
-                            {p.evidence.map((v, i) => (
-                              <p key={i}>{v}</p>
-                            ))}
-                          </details>
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            aria-label={`Unidades ${p.address}`}
-                            type="number"
-                            min="0"
-                            value={o.units ?? p.units ?? ""}
-                            onChange={(e) =>
-                              override(p.id, "units", e.target.value)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            aria-label={`Entrega ${p.address}`}
-                            type="date"
-                            value={o.deliveryDate ?? p.deliveryDate ?? ""}
-                            onChange={(e) =>
-                              override(p.id, "deliveryDate", e.target.value)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            aria-label={`Ocupação de referência ${p.address}`}
-                            placeholder="Desconhecida"
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={
-                              o.occupancyAtReference === undefined
-                                ? p.occupancyAtReference === null
-                                  ? ""
-                                  : p.occupancyAtReference * 100
-                                : o.occupancyAtReference * 100
-                            }
-                            onChange={(e) =>
-                              override(
+              <div className="project-table">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {[
+                        "Incluir",
+                        "Endereço / evidência",
+                        "Unidades",
+                        "Entrega hipotética",
+                        "Ocupado em 2026 (%)",
+                        "Ocupação final (%)",
+                      ].map((t) => (
+                        <TableHead key={t}>{t}</TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bundle.projects.map((p) => {
+                      const o = scenario.projectOverrides[p.id] ?? {};
+                      return (
+                        <TableRow
+                          key={p.id}
+                          className={highlight === p.id ? "highlight-row" : ""}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              aria-label={`Incluir ${p.address}`}
+                              checked={scenario.selectedProjectIds.includes(
                                 p.id,
-                                "occupancyAtReference",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            aria-label={`Ocupação final ${p.address}`}
-                            placeholder="Curva gradual"
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={
-                              o.occupancy === undefined ? "" : o.occupancy * 100
-                            }
-                            onChange={(e) =>
-                              override(p.id, "occupancy", e.target.value)
-                            }
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </section>
-        </TabsContent>
+                              )}
+                              onCheckedChange={(v) =>
+                                update({
+                                  selectedProjectIds: v
+                                    ? [
+                                        ...new Set([
+                                          ...scenario.selectedProjectIds,
+                                          p.id,
+                                        ]),
+                                      ]
+                                    : scenario.selectedProjectIds.filter(
+                                        (id) => id !== p.id,
+                                      ),
+                                })
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <strong>{p.address}</strong>
+                            <span className="project-meta">
+                              Alvará: {p.licenseDate ?? "sem data"}
+                            </span>
+                            <details>
+                              <summary>Documentação</summary>
+                              <p>
+                                {p.status}
+                                <br />
+                                Processo {p.process || "ausente"}
+                                <br />
+                                SQL {p.parcel || "ausente"}
+                              </p>
+                              {p.evidence.map((v, i) => (
+                                <p key={i}>{v}</p>
+                              ))}
+                            </details>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              aria-label={`Unidades ${p.address}`}
+                              type="number"
+                              min="0"
+                              value={o.units ?? p.units ?? ""}
+                              onChange={(e) =>
+                                override(p.id, "units", e.target.value)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              aria-label={`Entrega ${p.address}`}
+                              type="date"
+                              value={o.deliveryDate ?? p.deliveryDate ?? ""}
+                              onChange={(e) =>
+                                override(p.id, "deliveryDate", e.target.value)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              aria-label={`Ocupação de referência ${p.address}`}
+                              placeholder="Desconhecida"
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={
+                                o.occupancyAtReference === undefined
+                                  ? p.occupancyAtReference === null
+                                    ? ""
+                                    : p.occupancyAtReference * 100
+                                  : o.occupancyAtReference * 100
+                              }
+                              onChange={(e) =>
+                                override(
+                                  p.id,
+                                  "occupancyAtReference",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              aria-label={`Ocupação final ${p.address}`}
+                              placeholder="Curva gradual"
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={
+                                o.occupancy === undefined
+                                  ? ""
+                                  : o.occupancy * 100
+                              }
+                              onChange={(e) =>
+                                override(p.id, "occupancy", e.target.value)
+                              }
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
+          </TabsContent>
+        )}
         <TabsContent value="interventions">
           <section className="wide-card">
             <div className="section-heading">
@@ -1223,28 +1237,13 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <div className="qualitative">
-              <h3>Medidas que exigem levantamento local</h3>
-              <p>
-                Revisar fases semafóricas e travessias; conferir acessos e
-                conversões dos empreendimentos; avaliar conexões cicloviárias e
-                prioridade de ônibus. Filas, atrasos e redistribuição de
-                capacidade não são quantificados sem contagens, geometria e
-                programação semafórica.
-              </p>
-            </div>
           </section>
         </TabsContent>
         <TabsContent value="method">
           <section className="wide-card">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">PESQUISA REPRODUZÍVEL</span>
-                <h2>O que sustenta cada estimativa</h2>
-                <p>
-                  Fontes de dados, etapas de processamento, hipóteses e
-                  limitações usadas nas estimativas.
-                </p>
+                <h2>Origem dos dados</h2>
               </div>
               <div className="method-download">
                 <Button
@@ -1284,15 +1283,6 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <div className="method-flow">
-              População → Viagens → Modos → Veículos → Rotas
-            </div>
-            <p>
-              Os modos 9 e 13 da OD identificam motoristas de carro e moto.
-              Passageiros não geram veículos adicionais. A frota domiciliar é
-              uma variável distinta do uso; sua divergência com as tabelas
-              oficiais está documentada e ela não é usada para gerar fluxos.
-            </p>
             <h3 className="subheading">Zonas comparáveis</h3>
             <p>
               Distância padronizada em renda, densidade, composição domiciliar,
@@ -1358,42 +1348,7 @@ export default function Dashboard() {
                 ([purpose, n]) => [purpose, fmt(n)],
               )}
             />
-            <h3 className="subheading">Fontes e transformações</h3>
-            <div className="sources">
-              {bundle.manifest.sources.map((s) => (
-                <article key={s.id}>
-                  <span
-                    className={`badge ${s.status === "unavailable" ? "amber" : ""}`}
-                  >
-                    {s.status === "integrated" ? "Integrada" : "Não integrada"}
-                  </span>
-                  <a href={s.url} target="_blank" rel="noreferrer">
-                    {s.title}
-                  </a>
-                  <p>
-                    {s.version} · {s.license}
-                  </p>
-                  <p>Coleta: {s.collectedAt.slice(0, 10)}</p>
-                  {s.transformations.map((t, i) => (
-                    <p key={i}>{t}</p>
-                  ))}
-                  {s.sha256 && (
-                    <code title={s.sha256}>
-                      SHA-256 {s.sha256.slice(0, 20)}…
-                    </code>
-                  )}
-                </article>
-              ))}
-            </div>
             <div className="method-bottom">
-              <div>
-                <h3>Limitações e pendências</h3>
-                <ul>
-                  {(visible?.warnings ?? bundle.manifest.gaps).map((g, i) => (
-                    <li key={i}>{g}</li>
-                  ))}
-                </ul>
-              </div>
               <div>
                 <h3>Premissas explícitas</h3>
                 <ul>
@@ -1402,52 +1357,13 @@ export default function Dashboard() {
                   ))}
                 </ul>
                 <p>{bundle.populationMethod}</p>
-                <h3 className="subheading">Conferência com tabelas oficiais</h3>
-                <p>
-                  Maior diferença por zona: população{" "}
-                  {fmt(
-                    Number(bundle.manifest.validation.odMaxPopulationError),
-                    5,
-                  )}
-                  ; domicílios{" "}
-                  {fmt(
-                    Number(bundle.manifest.validation.odMaxHouseholdError),
-                    5,
-                  )}
-                  ; viagens produzidas{" "}
-                  {fmt(
-                    Number(bundle.manifest.validation.odMaxProducedTripsError),
-                    5,
-                  )}
-                  . Divergência na frota:{" "}
-                  {fmt(
-                    Number(bundle.manifest.validation.odMaxCarOwnershipError),
-                    2,
-                  )}{" "}
-                  (não usada no fluxo).
-                </p>
               </div>
             </div>
-            <h3 className="subheading">Análise de sensibilidade</h3>
-            <GridTable
-              head={["Hipótese", "Incremento diário estimado"]}
-              rows={
-                visible?.sensitivity.map((s) => [s.label, fmt(s.motorDelta)]) ??
-                []
-              }
-            />
-            <p className="hint">
-              As faixas não representam precisão estatística. A validação
-              externa depende de contagens locais reservadas.
-            </p>
           </section>
         </TabsContent>
       </Tabs>
       <footer>
-        <span>FLUXO · Rio Pequeno × Corifeu</span>
-        <span>
-          Fontes públicas · hipóteses visíveis · resultados reproduzíveis
-        </span>
+        <span>HERMES · Rio Pequeno × Corifeu</span>
       </footer>
     </main>
   );

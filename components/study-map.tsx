@@ -8,7 +8,7 @@ export default function StudyMap({
   onProject,
 }: {
   bundle: StudyBundle;
-  onProject: (id: string) => void;
+  onProject?: (id: string) => void;
 }) {
   const [zoom, setZoom] = useState(1),
     [pan, setPan] = useState([0, 0]);
@@ -121,16 +121,24 @@ export default function StudyMap({
                 fill="#e6a443"
                 stroke="white"
                 strokeWidth="1.5"
-                role="button"
-                tabIndex={0}
-                aria-label={`Ver empreendimento ${p.address}`}
-                onClick={() => onProject(p.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onProject(p.id);
-                  }
-                }}
+                role={onProject ? "button" : undefined}
+                tabIndex={onProject ? 0 : undefined}
+                aria-label={
+                  onProject
+                    ? `Ver empreendimento ${p.address}`
+                    : `Empreendimento ${p.address}`
+                }
+                onClick={onProject ? () => onProject(p.id) : undefined}
+                onKeyDown={
+                  onProject
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onProject(p.id);
+                        }
+                      }
+                    : undefined
+                }
               >
                 <title>
                   {p.address} · {p.units ?? "Unidades desconhecidas"} · entrega
