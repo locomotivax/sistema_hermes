@@ -348,12 +348,6 @@ details p {
   padding: 0 5px;
   border-radius: 4px;
 }
-.execution-id {
-  font-size: 0.75rem;
-  font-family: monospace;
-  color: #81909e;
-  white-space: nowrap;
-}
 .main-grid {
   display: grid;
   grid-template-columns: 286px minmax(0, 1fr);
@@ -761,6 +755,14 @@ details p {
   font-size: 0.875rem;
   margin-top: 7px;
 }
+.method-download {
+  max-width: 320px;
+}
+.method-download button {
+  height: auto;
+  min-height: 36px;
+  white-space: normal;
+}
 .project-table {
   margin-top: 20px;
 }
@@ -1029,9 +1031,6 @@ footer {
   }
   .charts-grid {
     grid-template-columns: 1fr;
-  }
-  .execution-id {
-    display: none;
   }
   .summary-row {
     grid-template-columns: 1fr;

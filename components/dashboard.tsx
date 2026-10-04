@@ -200,10 +200,12 @@ export default function Dashboard() {
   }, [scenario]);
   useEffect(() => {
     const abort = new AbortController();
-    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/study.json`, { signal: abort.signal })
+    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/study.json`, {
+      signal: abort.signal,
+    })
       .then((r) => {
         if (!r.ok)
-          throw new Error("Não foi possível carregar a execução publicada.");
+          throw new Error("Não foi possível carregar os dados publicados.");
         return r.json() as Promise<StudyBundle>;
       })
       .then((b: StudyBundle) => {
@@ -216,7 +218,9 @@ export default function Dashboard() {
           const old = localStorage.getItem("fluxo-scenario-v1");
           if (old) s = validateScenario(b, JSON.parse(old));
         } catch {
-          setNotice("A execução mudou. O cenário antigo foi descartado.");
+          setNotice(
+            "Os dados do estudo foram atualizados. O cenário anterior foi descartado.",
+          );
         }
         setBundle(b);
         setScenario(s);
@@ -433,7 +437,7 @@ export default function Dashboard() {
       <main className="load-screen">
         <Route size={36} />
         <h1>Rio Pequeno × Corifeu</h1>
-        <p role="status">{error || "Carregando a execução da pesquisa…"}</p>
+        <p role="status">{error || "Carregando os dados do estudo…"}</p>
         {error && (
           <Button onClick={() => location.reload()}>Tentar novamente</Button>
         )}
@@ -503,9 +507,6 @@ export default function Dashboard() {
               <Database size={16} /> Dados e método
             </TabsTrigger>
           </TabsList>
-          <span className="execution-id">
-            Execução {bundle.manifest.runId.slice(0, 8)}
-          </span>
         </div>
         {notice && (
           <div className="notice" role="status">
@@ -1241,22 +1242,28 @@ export default function Dashboard() {
                 <span className="eyebrow">PESQUISA REPRODUZÍVEL</span>
                 <h2>O que sustenta cada estimativa</h2>
                 <p>
-                  Execução {bundle.manifest.runId} · modelo{" "}
-                  {bundle.manifest.modelVersion} · referência{" "}
-                  {bundle.manifest.referenceDate}
+                  Fontes de dados, etapas de processamento, hipóteses e
+                  limitações usadas nas estimativas.
                 </p>
               </div>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  file(
-                    "manifesto.json",
-                    JSON.stringify(bundle.manifest, null, 2),
-                  )
-                }
-              >
-                Baixar proveniência
-              </Button>
+              <div className="method-download">
+                <Button
+                  variant="outline"
+                  aria-describedby="method-download-description"
+                  onClick={() =>
+                    file(
+                      "fontes-e-metodo.json",
+                      JSON.stringify(bundle.manifest, null, 2),
+                    )
+                  }
+                >
+                  <ArrowDownToLine size={16} /> Baixar fontes e método (JSON)
+                </Button>
+                <p id="method-download-description">
+                  Registro das fontes e de como os dados foram preparados, em
+                  formato JSON.
+                </p>
+              </div>
             </div>
             <div className="method-stats">
               {[
